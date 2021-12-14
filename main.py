@@ -1,38 +1,61 @@
 from tkinter import *
+from typing import Sized
 from PIL import ImageGrab, Image, ImageDraw
 from colors import getColor
 from model import infer
 from calc import calc
 
 WIDTH = 1000
-HEIGHT = 200
+HEIGHT = 300
 
 root = Tk()
 
 def constructInput(groupedStrokes):
-    # Reconstruct the groupedStrokes in a virtual graph
-    groupimg = Image.new('L',(WIDTH,HEIGHT),255)
+    # turn coordinate into 28*28 pixels pictures for model input
+    groupimg = Image.new('L', (WIDTH, HEIGHT), 255)
     draw = ImageDraw.Draw(groupimg)
-    BB = (WIDTH,HEIGHT,0,0)
+    SizeData = (WIDTH, HEIGHT, 0, 0)
+    
     for stroke in groupedStrokes:
-        draw.line(stroke,fill=0,width=10)
+        draw.line(stroke, fill=0, width=10)
         # update the bounding box
-        BB = (
-            min(BB[0], min(p[0] for p in stroke)),
-            min(BB[1], min(p[1] for p in stroke)),
-            max(BB[2], max(p[0] for p in stroke)),
-            max(BB[3], max(p[1] for p in stroke))
-            )
-    groupimg = groupimg.crop(BB)
+        SizeData = (
+            min(SizeData[0], min(p[0] for p in stroke)),
+            min(SizeData[1], min(p[1] for p in stroke)),
+            max(SizeData[2], max(p[0] for p in stroke)),
+            max(SizeData[3], max(p[1] for p in stroke))
+        )
+    
+    # this logic is witten in case all pixel are in line
+    if SizeData[0] == SizeData[2]:
+        SizeData = (
+            SizeData[0],
+            SizeData[1],
+            SizeData[2]+10,
+            SizeData[3]
+        )
+    if SizeData[1] == SizeData[3]:
+        SizeData = (
+            SizeData[0],
+            SizeData[1],
+            SizeData[2]+10,
+            SizeData[3]
+        )
+    # print(SizeData)
+    groupimg = groupimg.crop(SizeData)
+    
     # paste to the new canvas and resize
-    w = BB[2] - BB[0]
-    h = BB[3] - BB[1]
-    # the size of the new image, leave some margin
-    a = w + 5 if w > h else h + 5
-    exp_img = Image.new('L',(a,a),255)
-    exp_img.paste(groupimg, ((a-w)//2,(a-h)//2))
-    exp_img = exp_img.resize((28,28))
+    width = SizeData[2] - SizeData[0]
+    height = SizeData[3] - SizeData[1]
+
+    # to match the training pictures' size (28 * 28 with about 10% margin)
+    a = max(width, height) + 60
+    exp_img = Image.new('L', (a, a), 255)
+    exp_img.paste(groupimg, ((a-width)//2, (a-height)//2))
+    exp_img = exp_img.resize((28, 28))
+    exp_img.save("img.jpg")
     return exp_img
+
 
 class WriteArea(Canvas):
     def __init__(self, master, **kwargs):
@@ -49,11 +72,12 @@ class WriteArea(Canvas):
         self.strokePoints.clear()
 
     def draw_line(self, p1, p2, fill="black"):
-        self.create_line(p1[0], p1[1], p2[0], p2[1], joinstyle="round", capstyle="round", width=5, fill=fill, tags="inputs")
+        self.create_line(p1[0], p1[1], p2[0], p2[1], joinstyle="round",
+                         capstyle="round", width=15, fill=fill, tags="inputs")
 
     def paint(self, event):
         pos = tuple([event.x, event.y])
-        self.draw_line(self.startPoint,pos)
+        self.draw_line(self.startPoint, pos)
         self.startPoint = pos
         self.strokePoints.append(pos)
 
@@ -63,7 +87,8 @@ class WriteArea(Canvas):
         groupDict = self.grouping()
         results = []
         for gid in groupDict.keys():
-            groupedStrokes = [self.allStrokes[sid] for sid in groupDict[gid][0]]
+            groupedStrokes = [self.allStrokes[sid]
+                              for sid in groupDict[gid][0]]
             result = infer(constructInput(groupedStrokes))
             results.append(result)
         output_text.set(calc(results))
@@ -75,10 +100,10 @@ class WriteArea(Canvas):
 
     def draw_stroke(self, stroke, fill="black"):
         prev = stroke[0]
-        for _ in range(1,len(stroke)):
+        for _ in range(1, len(stroke)):
             self.draw_line(prev, stroke[_], fill)
             prev = stroke[_]
-    
+
     def grouping(self):
         """
         return a groupDict:
@@ -96,7 +121,7 @@ class WriteArea(Canvas):
             flag = False
             for gid in groupDict.keys():
                 if rightend <= groupDict[gid][2] or \
-                    groupDict[gid][2] - leftend > (groupDict[gid][2] - groupDict[gid][1]) * 0.1: # 缩小？
+                        groupDict[gid][2] - leftend > (groupDict[gid][2] - groupDict[gid][1]) * 0.1:
                     # contains or mostly overlapped
                     groupDict[gid][0].append(_)
                     # update the edge point
@@ -104,47 +129,53 @@ class WriteArea(Canvas):
                     groupDict[gid][2] = max(groupDict[gid][2], rightend)
                     flag = True
                     break
-            if flag: continue
+            if flag:
+                continue
             groupDict[ggid] = [[_], leftend, rightend]
             ggid += 1
         return groupDict
 
     def visualize(self):
         self.delete("inputs")
-        if visual.get() == "yes": 
+        if visual.get() == "yes":
             groupDict = self.grouping()
             for gid in groupDict.keys():
                 for strokeId in groupDict[gid][0]:
-                    self.draw_stroke(self.allStrokes[strokeId],getColor(gid))
-        else: 
+                    self.draw_stroke(self.allStrokes[strokeId], getColor(gid))
+        else:
             for stroke in self.allStrokes:
                 self.draw_stroke(stroke)
+
 
 canvasWriteArea = WriteArea(root, width=WIDTH, height=HEIGHT, bg="white")
 canvasWriteArea.pack()
 
 output_text = StringVar()
 
+
 def clean():
     canvasWriteArea.clean()
     output_text.set("")
 
+
 buttonErase = Button(root, width=20, height=5, text="Erase", command=clean)
 buttonErase.pack(side=LEFT, expand=YES)
+
 
 def erase_one(WriteArea):
     WriteArea.allStrokes.pop()
     groupDict = WriteArea.grouping()
     results = []
     for gid in groupDict.keys():
-        groupedStrokes = [WriteArea.allStrokes[sid] for sid in groupDict[gid][0]]
+        groupedStrokes = [WriteArea.allStrokes[sid]
+                          for sid in groupDict[gid][0]]
         result = infer(constructInput(groupedStrokes))
         results.append(result)
     output_text.set(calc(results))
     WriteArea.visualize()
 
-buttonEraseOne = Button(root, width=20, height=5, text="EraseOne", command=lambda : erase_one(canvasWriteArea))
-    # .place(x=100,y=220,anchor='nw')
+buttonEraseOne = Button(root, width=20, height=5, text="Return",
+                        command=lambda: erase_one(canvasWriteArea))
 buttonEraseOne.pack(side=RIGHT, expand=YES)
 
 labelResult = Label(root, width=40, height=5, textvariable=output_text)
@@ -153,10 +184,13 @@ labelResult.pack()
 visual = StringVar()
 visual.set("no")
 
+
 def visualize():
     canvasWriteArea.visualize()
 
-checkbuttonDebug = Checkbutton(root, width=20, height=5, variable=visual, text="Visualize Stroke Groups", onvalue="yes", offvalue="no", command=visualize)
+
+checkbuttonDebug = Checkbutton(root, width=20, height=5, variable=visual,
+                               text="Visualize Stroke Groups", onvalue="yes", offvalue="no", command=visualize)
 checkbuttonDebug.pack()
 
 root.mainloop()
