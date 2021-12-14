@@ -1,63 +1,20 @@
 from tkinter import *
-from typing import Sized
-from PIL import ImageGrab, Image, ImageDraw
-from colors import getColor
+from PIL import Image, ImageDraw
 from model import infer
 from calc import calc
-
-WIDTH = 1000
-HEIGHT = 300
 
 app = Tk()
 app.title("Handwriting Calculator with Tensorflow")
 
-def constructInput(groupedStrokes):
-    # turn coordinate into 28*28 pixels pictures for model input
-    groupimg = Image.new('L', (WIDTH, HEIGHT), 255)
-    draw = ImageDraw.Draw(groupimg)
-    SizeData = (WIDTH, HEIGHT, 0, 0)
-    
-    for stroke in groupedStrokes:
-        draw.line(stroke, fill=0, width=10)
-        # update the bounding box
-        SizeData = (
-            min(SizeData[0], min(p[0] for p in stroke)),
-            min(SizeData[1], min(p[1] for p in stroke)),
-            max(SizeData[2], max(p[0] for p in stroke)),
-            max(SizeData[3], max(p[1] for p in stroke))
-        )
-    
-    # in case all pixel are in line
-    if SizeData[0] == SizeData[2]:
-        SizeData = (
-            SizeData[0],
-            SizeData[1],
-            SizeData[2]+10,
-            SizeData[3]
-        )
-    if SizeData[1] == SizeData[3]:
-        SizeData = (
-            SizeData[0],
-            SizeData[1],
-            SizeData[2]+10,
-            SizeData[3]
-        )
-    # print(SizeData)
-    groupimg = groupimg.crop(SizeData)
-    
-    # paste to the new canvas and resize
-    width = SizeData[2] - SizeData[0]
-    height = SizeData[3] - SizeData[1]
+WIDTH = 1000
+HEIGHT = 200
+output_text = StringVar()
+visual = StringVar()
+visual.set("no")
+colors = ["red", "blue", "yellow", "green", "gray", "black", "pink", "purple", "orange", "aqua"]
 
-    # to match the training pictures' size (28 * 28 with about 10% margin)
-    a = max(width, height) + 60
-    exp_img = Image.new('L', (a, a), 255)
-    exp_img.paste(groupimg, ((a-width)//2, (a-height)//2))
-    exp_img = exp_img.resize((28, 28))
-    exp_img.save("img.jpg")
-    return exp_img
-
-
+# canvas设计部分参考了@LogCreative 
+# https://github.com/LogCreative/mnist-calculator
 class WriteArea(Canvas):
     def __init__(self, master, **kwargs):
         Canvas.__init__(self, master, kwargs)
@@ -75,7 +32,7 @@ class WriteArea(Canvas):
 
     def draw_line(self, p1, p2, fill="black"):
         self.create_line(p1[0], p1[1], p2[0], p2[1], joinstyle="round",
-                         capstyle="round", width=15, fill=fill, tags="inputs")
+                         capstyle="round", width=8, fill=fill, tags="inputs")
 
     def paint(self, event):
         pos = tuple([event.x, event.y])
@@ -92,7 +49,7 @@ class WriteArea(Canvas):
         for gid in groupDict.keys():
             groupedStrokes = [self.allStrokes[sid]
                               for sid in groupDict[gid][0]]
-            result = infer(constructInput(groupedStrokes))
+            result = infer(cord2pic(groupedStrokes))
             results.append(result)
         output_text.set(calc(results))
         self.visualize()
@@ -108,12 +65,6 @@ class WriteArea(Canvas):
             prev = stroke[_]
 
     def grouping(self):
-        """
-        return a groupDict:
-        [0]: the id's belong to this group
-        [1]: the leftend of this group
-        [2]: the rightend of this group
-        """
         self.allStrokes.sort(key=lambda stroke: min([p[0] for p in stroke]))
         groupDict = {}
         ggid = 0
@@ -144,29 +95,68 @@ class WriteArea(Canvas):
             groupDict = self.grouping()
             for gid in groupDict.keys():
                 for strokeId in groupDict[gid][0]:
-                    self.draw_stroke(self.allStrokes[strokeId], getColor(gid))
+                    self.draw_stroke(
+                        self.allStrokes[strokeId], colors[(gid - 1) % len(colors)])
         else:
             for stroke in self.allStrokes:
                 self.draw_stroke(stroke)
 
+# turn coordinate into 28*28 pixels pictures for model input
+def cord2pic(groupedStrokes):
+    groupimg = Image.new('L', (WIDTH, HEIGHT), 255)
+    draw = ImageDraw.Draw(groupimg)
+    SizeData = (WIDTH, HEIGHT, 0, 0)
 
-canvasWriteArea = WriteArea(app, width=WIDTH, height=HEIGHT, bg="white")
-canvasWriteArea.pack()
+    for stroke in groupedStrokes:
+        draw.line(stroke, fill=0, width=10)
+        # update the bounding box
+        SizeData = (
+            min(SizeData[0], min(p[0] for p in stroke)),
+            min(SizeData[1], min(p[1] for p in stroke)),
+            max(SizeData[2], max(p[0] for p in stroke)),
+            max(SizeData[3], max(p[1] for p in stroke))
+        )
 
-output_text = StringVar()
+    # in case all pixel are in line
+    if SizeData[0] == SizeData[2]:
+        SizeData = (
+            SizeData[0],
+            SizeData[1],
+            SizeData[2]+10,
+            SizeData[3]
+        )
+    if SizeData[1] == SizeData[3]:
+        SizeData = (
+            SizeData[0],
+            SizeData[1],
+            SizeData[2]+10,
+            SizeData[3]
+        )
 
+    # print(SizeData)
+    groupimg = groupimg.crop(SizeData)
 
-def clean():
+    # paste to the new canvas and resize
+    width = SizeData[2] - SizeData[0]
+    height = SizeData[3] - SizeData[1]
+
+    # to match the training pictures' size (28 * 28 with about 10% margin)
+    a = max(width, height) + 60
+    output_img = Image.new('L', (a, a), 255)
+    output_img.paste(groupimg, ((a-width)//2, (a-height)//2))
+    output_img = output_img.resize((28, 28))
+    output_img.save("tempImg.jpg")
+    return output_img
+
+# Clean the whole screen
+def clean_all():
     canvasWriteArea.clean()
     output_text.set("")
 
-
-buttonErase = Button(app, width=20, height=5, text="Erase", command=clean)
-buttonErase.pack(side=LEFT, expand=YES)
-
-
+# Return to last step
 def erase_one(WriteArea):
-    if len(WriteArea.seqAllStrokes)<=0:
+    # clean last stroke but not the rightest stroke
+    if len(WriteArea.seqAllStrokes) <= 0:
         return
     stroke = WriteArea.seqAllStrokes[-1]
     WriteArea.seqAllStrokes.pop()
@@ -176,28 +166,44 @@ def erase_one(WriteArea):
     for gid in groupDict.keys():
         groupedStrokes = [WriteArea.allStrokes[sid]
                           for sid in groupDict[gid][0]]
-        result = infer(constructInput(groupedStrokes))
+        result = infer(cord2pic(groupedStrokes))
         results.append(result)
     output_text.set(calc(results))
     WriteArea.visualize()
 
-buttonEraseOne = Button(app, width=20, height=5, text="Return",
-                        command=lambda: erase_one(canvasWriteArea))
-buttonEraseOne.pack(side=RIGHT, expand=YES)
-
-labelResult = Label(app, width=40, height=5, textvariable=output_text)
-labelResult.pack()
-
-visual = StringVar()
-visual.set("no")
+# show the canvas with stroke groups marked
 
 
 def visualize():
     canvasWriteArea.visualize()
 
 
-checkbuttonDebug = Checkbutton(app, width=20, height=5, variable=visual,
-                               text="Visualize Stroke Groups", onvalue="yes", offvalue="no", command=visualize)
-checkbuttonDebug.pack()
+# GUI part
+ButtonFrame = Frame(app, borderwidth=2)
+
+canvasWriteArea = WriteArea(
+    app, width=WIDTH, height=HEIGHT, bg="white", borderwidth=10)
+canvasWriteArea.pack()
+
+result = Label(app, width=60, height=5, bd=10,
+               relief=SUNKEN, textvariable=output_text)
+result.pack(side=LEFT, fill='y')
+
+selectorGroupIdentify = Checkbutton(ButtonFrame, width=20, height=1, variable=visual,
+                                    text="Identify Stroke Groups", onvalue="yes", offvalue="no", command=visualize)
+selectorGroupIdentify.pack(side=LEFT)
+
+buttonErase = Button(ButtonFrame, width=12, height=2,
+                     text="Clean", relief=RAISED, command=clean_all)
+buttonErase.pack(side=LEFT)
+
+buttonReturn = Button(ButtonFrame, width=12, height=2, text="Return",
+                      relief=RAISED, command=lambda: erase_one(canvasWriteArea))
+buttonReturn.pack(side=RIGHT)
+
+ButtonFrame.pack(side=LEFT, fill=X, ipadx="0.1i", ipady="0.1i", expand=1)
+selectorGroupIdentify.pack(side=TOP, padx="0.1i", pady="0.1i")
+buttonErase.pack(side=TOP, padx="0.1i", pady="0.1i")
+buttonReturn.pack(side=TOP, padx="0.1i", pady="0.1i")
 
 app.mainloop()
