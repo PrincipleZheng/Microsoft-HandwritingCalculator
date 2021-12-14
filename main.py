@@ -66,6 +66,7 @@ class WriteArea(Canvas):
         self.startPoint = tuple([0, 0])
         self.strokePoints = []
         self.allStrokes = []
+        self.seqAllStrokes = []
 
     def mouse_down(self, event):
         self.startPoint = event.x, event.y
@@ -84,6 +85,7 @@ class WriteArea(Canvas):
     def mouse_up(self, event):
         if len(self.strokePoints) > 0:
             self.allStrokes.append(self.strokePoints.copy())
+            self.seqAllStrokes.append(self.strokePoints.copy())
         groupDict = self.grouping()
         results = []
         for gid in groupDict.keys():
@@ -163,7 +165,9 @@ buttonErase.pack(side=LEFT, expand=YES)
 
 
 def erase_one(WriteArea):
-    WriteArea.allStrokes.pop()
+    stroke = WriteArea.seqAllStrokes[-1]
+    WriteArea.seqAllStrokes.pop()
+    WriteArea.allStrokes.remove(stroke)
     groupDict = WriteArea.grouping()
     results = []
     for gid in groupDict.keys():
