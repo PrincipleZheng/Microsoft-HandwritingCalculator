@@ -1,3 +1,4 @@
+# 双栈计算结构参考@LogCreative 已与原作者沟通
 import math
 
 ADD     = 10        # + 0
