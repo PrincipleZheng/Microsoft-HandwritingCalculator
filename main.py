@@ -8,7 +8,8 @@ from calc import calc
 WIDTH = 1000
 HEIGHT = 300
 
-root = Tk()
+app = Tk()
+app.title("Handwriting Calculator with Tensorflow")
 
 def constructInput(groupedStrokes):
     # turn coordinate into 28*28 pixels pictures for model input
@@ -26,7 +27,7 @@ def constructInput(groupedStrokes):
             max(SizeData[3], max(p[1] for p in stroke))
         )
     
-    # this logic is witten in case all pixel are in line
+    # in case all pixel are in line
     if SizeData[0] == SizeData[2]:
         SizeData = (
             SizeData[0],
@@ -149,7 +150,7 @@ class WriteArea(Canvas):
                 self.draw_stroke(stroke)
 
 
-canvasWriteArea = WriteArea(root, width=WIDTH, height=HEIGHT, bg="white")
+canvasWriteArea = WriteArea(app, width=WIDTH, height=HEIGHT, bg="white")
 canvasWriteArea.pack()
 
 output_text = StringVar()
@@ -160,11 +161,13 @@ def clean():
     output_text.set("")
 
 
-buttonErase = Button(root, width=20, height=5, text="Erase", command=clean)
+buttonErase = Button(app, width=20, height=5, text="Erase", command=clean)
 buttonErase.pack(side=LEFT, expand=YES)
 
 
 def erase_one(WriteArea):
+    if len(WriteArea.seqAllStrokes)<=0:
+        return
     stroke = WriteArea.seqAllStrokes[-1]
     WriteArea.seqAllStrokes.pop()
     WriteArea.allStrokes.remove(stroke)
@@ -178,11 +181,11 @@ def erase_one(WriteArea):
     output_text.set(calc(results))
     WriteArea.visualize()
 
-buttonEraseOne = Button(root, width=20, height=5, text="Return",
+buttonEraseOne = Button(app, width=20, height=5, text="Return",
                         command=lambda: erase_one(canvasWriteArea))
 buttonEraseOne.pack(side=RIGHT, expand=YES)
 
-labelResult = Label(root, width=40, height=5, textvariable=output_text)
+labelResult = Label(app, width=40, height=5, textvariable=output_text)
 labelResult.pack()
 
 visual = StringVar()
@@ -193,8 +196,8 @@ def visualize():
     canvasWriteArea.visualize()
 
 
-checkbuttonDebug = Checkbutton(root, width=20, height=5, variable=visual,
+checkbuttonDebug = Checkbutton(app, width=20, height=5, variable=visual,
                                text="Visualize Stroke Groups", onvalue="yes", offvalue="no", command=visualize)
 checkbuttonDebug.pack()
 
-root.mainloop()
+app.mainloop()
