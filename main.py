@@ -96,7 +96,7 @@ class WriteArea(Canvas):
             flag = False
             for gid in groupDict.keys():
                 if rightend <= groupDict[gid][2] or \
-                    groupDict[gid][2] - leftend > (groupDict[gid][2] - groupDict[gid][1]) * 0.1:
+                    groupDict[gid][2] - leftend > (groupDict[gid][2] - groupDict[gid][1]) * 0.1: # 缩小？
                     # contains or mostly overlapped
                     groupDict[gid][0].append(_)
                     # update the edge point
@@ -130,7 +130,22 @@ def clean():
     output_text.set("")
 
 buttonErase = Button(root, width=20, height=5, text="Erase", command=clean)
-buttonErase.pack()
+buttonErase.pack(side=LEFT, expand=YES)
+
+def erase_one(WriteArea):
+    WriteArea.allStrokes.pop()
+    groupDict = WriteArea.grouping()
+    results = []
+    for gid in groupDict.keys():
+        groupedStrokes = [WriteArea.allStrokes[sid] for sid in groupDict[gid][0]]
+        result = infer(constructInput(groupedStrokes))
+        results.append(result)
+    output_text.set(calc(results))
+    WriteArea.visualize()
+
+buttonEraseOne = Button(root, width=20, height=5, text="EraseOne", command=lambda : erase_one(canvasWriteArea))
+    # .place(x=100,y=220,anchor='nw')
+buttonEraseOne.pack(side=RIGHT, expand=YES)
 
 labelResult = Label(root, width=40, height=5, textvariable=output_text)
 labelResult.pack()
