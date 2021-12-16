@@ -7,7 +7,7 @@ app = Tk()
 app.title("Handwriting Calculator with Tensorflow")
 
 WIDTH = 1000
-HEIGHT = 200
+HEIGHT = 300
 output_text = StringVar()
 visual = StringVar()
 visual.set("no")

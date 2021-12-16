@@ -2,6 +2,8 @@
 
 根据官方指导中的脚本安装好环境。
 
+将packages文件夹复制一份放入task1目录下
+
 ```bash
 cd task1/mnist
 ```
@@ -22,15 +24,19 @@ cd task1/extended_mnist_calculator
 
 #### 运行方法
 
+将packages文件夹复制一份放入task1目录下
+
 ```bash
 cd task2/src
 ```
 
 进入目录后双击MnistDemo.sln，在界面中运行项目即可。
 
-注：task1和task2配置运行环境需要按照Microsoft AI库中的指南安装tools for AI
-
 ## task3
+
+运行效果：
+
+
 
 ### 数据处理
 
@@ -48,4 +54,7 @@ cd task2/src
 
 我们找到了kaggle上[包含方括号的符号数据集](https://www.kaggle.com/michelheusser/handwritten-digits-and-operators)，采用其中的左右方括号数据集来代替我们原本数据集中的圆括号，进行了训练，识别准确率有明显提升。
 
-对于应用的搭建，我们利用了Python的GUI库tkinter，
+对于应用的搭建，我们利用了Python的GUI库tkinter，实现了清除屏幕，回退上一步的交互功能，同时有区分主体，显示不同颜色的选项。主体重叠分割的规则与C#版本的算法一致，都是竖向投影，设定10%的阈值。
+
+处理计算的双栈结构逻辑，即将识别的字符式子计算成数字的部分以及主提分割的部分具体实现，参考了@LogCreative，已与原作者沟通并在代码中标明。
+
