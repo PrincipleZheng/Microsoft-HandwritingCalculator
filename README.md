@@ -31,10 +31,11 @@ cd task2/src
 
 
 ## task3
-
-……
-
-
+### 运行方法
+```
+cd task3
+python main.py
+```
 
 ### 数据处理
 
