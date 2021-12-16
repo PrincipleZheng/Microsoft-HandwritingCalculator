@@ -1,5 +1,11 @@
 ## task1
 
+运行效果：
+
+![Image text](pic/T1.png)
+
+![Image text](pic/T1-1.png)
+
 根据官方指导中的脚本安装好环境。
 
 将packages文件夹复制一份放入task1目录下
@@ -17,6 +23,10 @@ cd task1/extended_mnist_calculator
 双击MnistDemo.sln即可运行手写算式识别与运算
 
 ## task2
+
+运行效果：
+
+![Image text](pic/T2.png)
 
 用pythonnet调用.NET框架中的dll库，继承其中的System.Windows.Forms类并自定义前端界面，在调用model.dll中的函数来进行预测，并显示于前端。
 
@@ -36,7 +46,9 @@ cd task2/src
 
 运行效果：
 
+![Image text](pic/T3.png)
 
+![Image text](pic/T3-1.png)
 
 ### 数据处理
 
