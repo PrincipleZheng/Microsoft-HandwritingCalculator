@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <EnableSonomaServing>true</EnableSonomaServing>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(EnableSonomaServing)' == 'true'">
+      <ItemGroup>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_vml_def.dll">
+  <Link>mkl_vml_def.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_intel_thread.dll">
+  <Link>mkl_intel_thread.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\Microsoft.ML.ScoringNative.dll">
+  <Link>Microsoft.ML.ScoringNative.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_avx.dll">
+  <Link>mkl_avx.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_sequential.dll">
+  <Link>mkl_sequential.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_vml_avx.dll">
+  <Link>mkl_vml_avx.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_avx2.dll">
+  <Link>mkl_avx2.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_rt.dll">
+  <Link>mkl_rt.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\tensorflow.dll">
+  <Link>tensorflow.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_core.dll">
+  <Link>mkl_core.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\libiomp5md.dll">
+  <Link>libiomp5md.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_def.dll">
+  <Link>mkl_def.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+<None Include="$(MSBuildThisFileDirectory)..\..\lib\native\x64\release\mkl_avx512.dll">
+  <Link>mkl_avx512.dll</Link>
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+</None>
+
+<Reference Include="Microsoft.ML.Scoring">
+  <HintPath>$(MSBuildThisFileDirectory)..\..\lib\net45\x64\release\Microsoft.ML.Scoring.dll</HintPath>
+</Reference>
+
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <Target Name="Microsoft_ML_Scoring_CheckPrerequisites" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(Platform)' != 'x64'"
+           Text="Microsoft.ML.Scoring only supports the x64 platform at this time."/>
+    <!-- TODO also check for compatible .NET framework? -->
+  </Target>
+</Project>
