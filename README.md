@@ -8,8 +8,6 @@
 
 根据官方指导中的脚本安装好环境。
 
-将packages文件夹复制一份放入task1目录下
-
 ```bash
 cd task1/mnist
 ```
