@@ -1,0 +1,6 @@
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.csprojAssemblyReference.cache
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.MainWindow.resources
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.Properties.Resources.resources
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.MainWindow.zh-Hans.resources
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.csproj.GenerateResource.cache
+C:\Users\25753\Desktop\Microsoft-HandwritingCalculator\task1\extended_mnist_calculator\MNIST.App\obj\x64\Debug\MNIST.App.csproj.CoreCompileInputs.cache
