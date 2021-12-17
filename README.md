@@ -32,8 +32,6 @@ cd task1/extended_mnist_calculator
 
 #### 运行方法
 
-将packages文件夹复制一份放入task1目录下
-
 ```bash
 cd task2/src
 ```
