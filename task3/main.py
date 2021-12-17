@@ -1,5 +1,6 @@
 from tkinter import *
 from PIL import Image, ImageDraw
+from PIL import ImageTk
 from model import infer
 from calc import calc
 
@@ -205,5 +206,27 @@ ButtonFrame.pack(side=LEFT, fill=X, ipadx="0.1i", ipady="0.1i", expand=1)
 selectorGroupIdentify.pack(side=TOP, padx="0.1i", pady="0.1i")
 buttonErase.pack(side=TOP, padx="0.1i", pady="0.1i")
 buttonReturn.pack(side=TOP, padx="0.1i", pady="0.1i")
+
+# im=Image.open("tempImg.jpg")
+# img=ImageTk.PhotoImage(im)
+# imLabel=Label(app,image=img).pack()
+# app.update()
+# app.after(1000)
+
+label = Label(ButtonFrame)
+label.pack(side=TOP)
+delay = 10   # in milliseconds
+
+img=None
+im=None
+
+def loopCapture():
+    im=Image.open("tempImg.jpg")
+    img=ImageTk.PhotoImage(im)
+    label.config(image=img)
+    app.update()
+    app.after(delay, loopCapture)
+    
+loopCapture()
 
 app.mainloop()
